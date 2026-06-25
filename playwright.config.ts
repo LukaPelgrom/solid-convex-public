@@ -21,7 +21,7 @@ export default defineConfig({
       timeout: 120_000,
     },
     {
-      command: `VITE_CONVEX_URL=${convexUrl} PUBLIC_CONVEX_URL=${convexUrl} VITE_CONVEX_SITE_URL=${convexSiteUrl} PUBLIC_CONVEX_SITE_URL=${convexSiteUrl} bun run dev:tanstack`,
+      command: `VITE_CONVEX_URL=${convexUrl} VITE_CONVEX_SITE_URL=${convexSiteUrl} bun run dev:tanstack`,
       url: "http://localhost:3201",
       reuseExistingServer: true,
       timeout: 120_000,
