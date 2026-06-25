@@ -6,7 +6,7 @@ import {
   type DemoRole,
 } from "@solid-convex-public/permissions";
 import { betterAuth, type BetterAuthOptions } from "better-auth/minimal";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { components } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
 import {
@@ -33,6 +33,15 @@ const siteUrls = () =>
 type AppDbCtx = QueryCtx | MutationCtx;
 
 export const authComponent = createClient<DataModel>(components.betterAuth);
+
+const demoAdminEmail = "admin@test.com";
+const demoAdminPassword = "Welcome01!";
+
+const isLocalUrl = (url: string | undefined) =>
+  Boolean(
+    url?.startsWith("http://127.0.0.1:") ||
+      url?.startsWith("http://localhost:"),
+  );
 
 export const demoRoleValidator = v.union(
   v.literal("employee"),
@@ -68,6 +77,35 @@ const getDemoProfile = async (ctx: AppDbCtx, userId: string) =>
     .query("demoProfiles")
     .withIndex("by_user", (q) => q.eq("userId", userId))
     .unique();
+
+const getAuthUserByEmail = async (ctx: AppDbCtx, email: string) =>
+  await ctx.runQuery(components.betterAuth.adapter.findOne, {
+    model: "user",
+    where: [{ field: "email", value: email }],
+  });
+
+const upsertDemoProfileForUser = async (
+  ctx: MutationCtx,
+  userId: string,
+  role: DemoRole,
+) => {
+  const existing = await getDemoProfile(ctx, userId);
+  const now = Date.now();
+
+  if (existing) {
+    await ctx.db.patch(existing._id, {
+      role,
+      updatedAt: now,
+    });
+  } else {
+    await ctx.db.insert("demoProfiles", {
+      userId,
+      role,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+};
 
 const toDemoUser = (
   user: Awaited<ReturnType<typeof authComponent.getAuthUser>>,
@@ -114,23 +152,52 @@ export const upsertDemoProfile = mutation({
   },
   handler: async (ctx, args) => {
     const user = await authComponent.getAuthUser(ctx);
-    const existing = await getDemoProfile(ctx, user._id);
-    const now = Date.now();
-
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        role: args.role,
-        updatedAt: now,
-      });
-    } else {
-      await ctx.db.insert("demoProfiles", {
-        userId: user._id,
-        role: args.role,
-        createdAt: now,
-        updatedAt: now,
-      });
-    }
+    await upsertDemoProfileForUser(ctx, user._id, args.role);
 
     return toDemoUser(user, args.role);
+  },
+});
+
+export const seedAdmin = mutation({
+  args: {},
+  handler: async (ctx) => {
+    if (!isLocalUrl(process.env.CONVEX_SITE_URL)) {
+      throw new ConvexError("Demo admin seeding is disabled in production.");
+    }
+
+    const existing = await getAuthUserByEmail(ctx, demoAdminEmail);
+    if (existing) {
+      await upsertDemoProfileForUser(ctx, existing._id, "admin");
+
+      return {
+        email: demoAdminEmail,
+        password: demoAdminPassword,
+        role: "admin",
+        status: "already-existed",
+      };
+    }
+
+    const { auth } = await authComponent.getAuth(createAuth, ctx);
+    await auth.api.signUpEmail({
+      body: {
+        email: demoAdminEmail,
+        name: "Demo Admin",
+        password: demoAdminPassword,
+      },
+    });
+
+    const user = await getAuthUserByEmail(ctx, demoAdminEmail);
+    if (!user) {
+      throw new ConvexError("Demo admin user was not created.");
+    }
+
+    await upsertDemoProfileForUser(ctx, user._id, "admin");
+
+    return {
+      email: demoAdminEmail,
+      password: demoAdminPassword,
+      role: "admin",
+      status: "created",
+    };
   },
 });

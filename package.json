@@ -14,10 +14,11 @@
     "dev:todo": "bun run --cwd apps/tanstack-router-demo dev",
     "dev:tanstack": "bun run --cwd apps/tanstack-router-demo dev",
     "format": "prettier --write .",
-    "i18n:compile": "paraglide-js compile --project ./project.inlang --outdir ./packages/core/src/paraglide --strategy globalVariable localStorage baseLocale --emit-ts-declarations --no-emit-git-ignore --no-emit-prettier-ignore",
+    "i18n:compile": "paraglide-js compile --project ./project.inlang --outdir ./packages/core/src/paraglide --strategy globalVariable localStorage baseLocale --output-structure locale-modules --emit-ts-declarations --no-emit-git-ignore --no-emit-prettier-ignore",
     "test:unit": "bun --conditions=browser test packages/core/tests tests/unit",
     "test:convex": "vitest run --config vitest.config.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "seed:admin": "bun run --cwd packages/backend convex run auth:seedAdmin --push --typecheck disable"
   },
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",

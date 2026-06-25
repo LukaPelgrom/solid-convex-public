@@ -65,7 +65,7 @@ export const createTestUser = async (
     sessionId: session._id,
     subject: user._id,
     tokenIdentifier: `https://convex.test|${user._id}`,
-  } as Partial<UserIdentity>;
+  } satisfies Partial<UserIdentity>;
 
   return {
     authed: t.withIdentity(identity),

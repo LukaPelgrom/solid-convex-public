@@ -1,7 +1,23 @@
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
-import type { Id } from "./_generated/dataModel";
 import { createBackendTest, createTestUser } from "./test.setup";
+
+const withLocalConvexSite = async <Result>(
+  run: () => Promise<Result>,
+): Promise<Result> => {
+  const originalSiteUrl = process.env.CONVEX_SITE_URL;
+  process.env.CONVEX_SITE_URL = "http://127.0.0.1:3211";
+
+  try {
+    return await run();
+  } finally {
+    if (originalSiteUrl === undefined) {
+      delete process.env.CONVEX_SITE_URL;
+    } else {
+      process.env.CONVEX_SITE_URL = originalSiteUrl;
+    }
+  }
+};
 
 describe("backend Convex functions", () => {
   test("returns empty public demo items for an unauthenticated user", async () => {
@@ -44,6 +60,30 @@ describe("backend Convex functions", () => {
     });
   });
 
+  test("seeds the local demo admin user idempotently", async () => {
+    const t = createBackendTest();
+
+    await withLocalConvexSite(async () => {
+      await expect(t.mutation(api.auth.seedAdmin)).resolves.toMatchObject({
+        email: "admin@test.com",
+        role: "admin",
+        status: "created",
+      });
+
+      await expect(t.mutation(api.auth.seedAdmin)).resolves.toMatchObject({
+        email: "admin@test.com",
+        role: "admin",
+        status: "already-existed",
+      });
+    });
+
+    await expect(
+      t.run(async (ctx) => await ctx.db.query("demoProfiles").first()),
+    ).resolves.toMatchObject({
+      role: "admin",
+    });
+  });
+
   test("keeps todo ownership isolated and reorders complete owned lists", async () => {
     const t = createBackendTest();
     const sarah = await createTestUser(t, {
@@ -77,13 +117,13 @@ describe("backend Convex functions", () => {
 
     await expect(
       sarah.authed.mutation(api.todos.reorder, {
-        ids: [secondId as Id<"todoItems">],
+        ids: [secondId],
       }),
     ).rejects.toThrow("Todo order is stale.");
 
     await expect(
       sarah.authed.mutation(api.todos.reorder, {
-        ids: [firstId as Id<"todoItems">, secondId as Id<"todoItems">],
+        ids: [firstId, secondId],
       }),
     ).resolves.toMatchObject([
       { title: "First todo" },
