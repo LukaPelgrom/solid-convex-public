@@ -1,7 +1,7 @@
 import { createMemo } from "solid-js";
 import { api } from "@solid-convex-public/backend/convex/_generated/api";
 import type { Id } from "@solid-convex-public/backend/convex/_generated/dataModel";
-import { mutation, query } from "@solid-convex-public/core";
+import { mutation, useQuery } from "@solid-convex-public/core";
 import type { SolidConvexAuth } from "./auth";
 import type { TodoFormInput, TodoItem } from "./types";
 
@@ -14,9 +14,10 @@ const sortTodos = (items: TodoItem[]) =>
   );
 
 export const createTodos = (auth: SolidConvexAuth) => {
-  const todoItems = query(api.todos.list, {
+  const [todoItems, todoItemsState] = useQuery(api.todos.list, {
     enabled: () => Boolean(auth.user()),
-  }) as () => TodoItem[] | undefined;
+    initialData: [] satisfies TodoItem[],
+  });
   const createTodoItem = mutation(api.todos.create);
   const updateTodoItem = mutation(api.todos.update);
   const resetTodoItems = mutation(api.todos.resetMine);
@@ -57,8 +58,8 @@ export const createTodos = (auth: SolidConvexAuth) => {
     debounce: 120,
   });
 
-  const todos = createMemo(() => sortTodos(todoItems() ?? []));
-  const isLoading = () => todoItems() === undefined && Boolean(auth.user());
+  const todos = createMemo(() => sortTodos(todoItems()));
+  const isLoading = todoItemsState.isLoading;
 
   const createTodo = async (input: TodoFormInput) => {
     await createTodoItem(input);
@@ -81,11 +82,11 @@ export const createTodos = (auth: SolidConvexAuth) => {
   };
 
   const resetTodos = async () => {
-    await resetTodoItems({});
+    await resetTodoItems();
   };
 
   const replaceFirstTodo = async () => {
-    await replaceFirstTodoItem({});
+    await replaceFirstTodoItem();
   };
 
   return {

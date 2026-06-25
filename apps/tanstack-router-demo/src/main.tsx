@@ -1,12 +1,41 @@
 import { render } from "solid-js/web";
 import { RouterProvider, createRouter } from "@tanstack/solid-router";
 import { SolidConvexProvider } from "@solid-convex-public/core";
+import { subjectFromRole } from "@solid-convex-public/permissions";
 import { routeTree } from "./routeTree.gen";
 import { createDemoConvex, createSolidConvexAuth } from "./demo";
+import type { SolidConvexAuth } from "./demo";
 import type { RouterContext } from "./routes/__root";
 import "./styles.css";
 
 const convex = createDemoConvex();
+
+const missingRouterAuth = () => {
+  throw new Error("Router auth context is not available yet.");
+};
+
+const placeholderAuth = {
+  session: () => ({
+    data: null,
+    error: null,
+    isPending: false,
+    isRefetching: false,
+    refetch: async () => undefined,
+  }),
+  user: () => null,
+  subject: () => subjectFromRole(null),
+  isReady: () => false,
+  refreshVersion: () => 0,
+  waitUntilReady: async () => missingRouterAuth(),
+  signIn: async () => missingRouterAuth(),
+  register: async () => missingRouterAuth(),
+  signOut: async () => missingRouterAuth(),
+} satisfies SolidConvexAuth;
+
+const placeholderRouterContext = {
+  auth: placeholderAuth,
+  convex,
+} satisfies RouterContext;
 
 function DemoRoutePending() {
   return <main class="page-content">Loading route...</main>;
@@ -22,7 +51,7 @@ function DemoRouteError(props: { error: Error }) {
 
 const router = createRouter({
   routeTree,
-  context: {} as RouterContext,
+  context: placeholderRouterContext,
   defaultErrorComponent: DemoRouteError,
   defaultPendingComponent: DemoRoutePending,
   defaultPendingMs: 0,

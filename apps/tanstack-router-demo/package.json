@@ -14,6 +14,7 @@
     "@solid-convex-public/core": "workspace:*",
     "@solid-convex-public/permissions": "workspace:*",
     "@solid-primitives/keyed": "^1.5.3",
+    "@tanstack/intent": "^0.1.1",
     "@tanstack/solid-form": "^1.33.0",
     "@tanstack/solid-router": "^1.170.16",
     "@vitejs/plugin-basic-ssl": "^2.1.0",

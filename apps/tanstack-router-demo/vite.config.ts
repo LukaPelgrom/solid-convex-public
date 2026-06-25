@@ -7,6 +7,13 @@ export default defineConfig({
   plugins: [
     tanstackRouter({
       target: "solid",
+      routesDirectory: "./src/routes",
+      generatedRouteTree: "./src/routeTree.gen.ts",
+      disableTypes: false,
+      routeTreeFileHeader: [
+        "/* eslint-disable */",
+        "// noinspection JSUnusedGlobalSymbols",
+      ],
       autoCodeSplitting: true,
     }),
     paraglideVitePlugin({
@@ -15,6 +22,7 @@ export default defineConfig({
       emitGitIgnore: false,
       emitPrettierIgnore: false,
       emitTsDeclarations: true,
+      outputStructure: "locale-modules",
       strategy: ["globalVariable", "localStorage", "baseLocale"],
     }),
     solid(),

@@ -1,9 +1,8 @@
 import {
   createFileRoute,
+  redirect,
   useNavigate,
-  useRouter,
 } from "@tanstack/solid-router";
-import { createEffect } from "solid-js";
 import {
   DemoRegisterForm,
   type AuthLinkRenderer,
@@ -15,6 +14,13 @@ import {
 
 export const Route = createFileRoute("/register")({
   validateSearch: parseAuthRedirectSearch,
+  beforeLoad: async ({ context, search }) => {
+    await context.auth.waitUntilReady();
+
+    if (context.auth.user()) {
+      throw redirect({ to: search.redirect, replace: true });
+    }
+  },
   component: Register,
 });
 
@@ -25,24 +31,16 @@ const renderAuthLink: AuthLinkRenderer = (props) => (
 );
 
 function Register() {
-  const router = useRouter();
-  const navigate = useNavigate();
+  const context = Route.useRouteContext();
+  const navigate = useNavigate({ from: Route.fullPath });
   const search = Route.useSearch();
-  const auth = router.options.context.auth;
+  const auth = () => context().auth;
   const redirectTo = () => search().redirect;
-
-  createEffect(() => {
-    if (!auth.isReady() || !auth.user()) {
-      return;
-    }
-
-    void navigate({ to: redirectTo(), replace: true });
-  });
 
   return (
     <DemoRegisterForm
       onSubmit={async (input) => {
-        await auth.register(input);
+        await auth().register(input);
         await navigate({ to: redirectTo(), replace: true });
       }}
       signInHref={authRedirectHref("/", redirectTo())}

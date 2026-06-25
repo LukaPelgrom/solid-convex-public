@@ -1,19 +1,12 @@
 import { api } from "@solid-convex-public/backend/convex/_generated/api";
 import type { SolidConvexReader } from "@solid-convex-public/core";
-import { isConvexConfigured } from "./runtime";
 import type { DemoUser, PrefetchedDemoData } from "./types";
 
 export const prefetchCurrentUser = async (
   convex: SolidConvexReader,
 ): Promise<DemoUser | null> => {
-  if (!isConvexConfigured()) return null;
-
   try {
-    return (
-      ((await convex.prefetch(api.auth.getCurrentUserProfile)) as
-        | DemoUser
-        | undefined) ?? null
-    );
+    return (await convex.prefetch(api.auth.getCurrentUserProfile)) ?? null;
   } catch (error) {
     console.warn("Could not prefetch current user.", error);
     return null;

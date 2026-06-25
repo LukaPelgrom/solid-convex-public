@@ -37,7 +37,7 @@ export const createSolidConvexAuth = () => {
       return null;
     }
 
-    return userProfile() as DemoUser | undefined;
+    return userProfile();
   });
   const subject = createMemo<PermissionSubject>(() =>
     subjectFromRole(user()?.role),
@@ -47,6 +47,17 @@ export const createSolidConvexAuth = () => {
       !session().isPending &&
       (!session().data?.user?.id || user() !== undefined),
   );
+  const waitUntilReady = async () => {
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      if (isReady()) {
+        return;
+      }
+
+      await sleep(100);
+    }
+
+    throw new Error("Authentication state did not become ready.");
+  };
   const upsertDemoProfile = mutation(api.auth.upsertDemoProfile);
   const syncSession = async () => {
     const nextSession = await authClient.getSession();
@@ -132,6 +143,7 @@ export const createSolidConvexAuth = () => {
     subject,
     isReady,
     refreshVersion,
+    waitUntilReady,
     signIn,
     register,
     signOut,

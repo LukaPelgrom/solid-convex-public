@@ -1,15 +1,7 @@
-import {
-  Outlet,
-  createRootRouteWithContext,
-  useLocation,
-  useRouter,
-} from "@tanstack/solid-router";
-import { Show, createEffect } from "solid-js";
+import { Outlet, createRootRouteWithContext } from "@tanstack/solid-router";
 import type { SolidConvex } from "@solid-convex-public/core";
 import { PermissionProvider } from "@solid-convex-public/permissions/solid";
 import type { SolidConvexAuth } from "../demo";
-import { normalizeAuthRedirect } from "../demo/auth-redirect";
-import { TanStackDemoShell } from "../demo-shell";
 
 export type RouterContext = {
   auth: SolidConvexAuth;
@@ -21,34 +13,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function Root() {
-  const router = useRouter();
-  const location = useLocation();
-  const auth = router.options.context.auth;
-  const user = () => auth.user() ?? null;
-  const isAuthRoute = () =>
-    location().pathname === "/" || location().pathname === "/register";
-  const shouldRenderShell = () =>
-    !isAuthRoute() && (!auth.isReady() || Boolean(auth.user()));
-
-  createEffect(() => {
-    if (!auth.isReady() || isAuthRoute() || auth.user()) {
-      return;
-    }
-
-    void router.navigate({
-      to: "/",
-      search: { redirect: normalizeAuthRedirect(location().pathname) },
-      replace: true,
-    });
-  });
+  const context = Route.useRouteContext();
+  const auth = () => context().auth;
 
   return (
-    <PermissionProvider subject={auth.subject}>
-      <Show when={shouldRenderShell()} fallback={<Outlet />}>
-        <TanStackDemoShell auth={auth} user={user}>
-          <Outlet />
-        </TanStackDemoShell>
-      </Show>
+    <PermissionProvider subject={auth().subject}>
+      <Outlet />
     </PermissionProvider>
   );
 }

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/solid-router";
-import { createMemo, type Accessor, type JSX } from "solid-js";
+import { Show, createMemo, type Accessor, type JSX } from "solid-js";
 import {
   FeedbackKitAppShell,
   type FeedbackKitLinkRenderer,
@@ -8,17 +8,23 @@ import {
 import type { DemoUser, SolidConvexAuth } from "./demo";
 
 const renderLink: FeedbackKitLinkRenderer = (props) => (
-  <Link
-    to={props.href as "/" | "/register" | "/todos"}
-    class={props.class}
-    onClick={props.onClick}
+  <Show
+    when={props.href === "/todos"}
+    fallback={
+      <a href={props.href} class={props.class} onClick={props.onClick}>
+        {props.children}
+      </a>
+    }
   >
-    {props.children}
-  </Link>
+    <Link to="/todos" class={props.class} onClick={props.onClick}>
+      {props.children}
+    </Link>
+  </Show>
 );
 
 export function TanStackDemoShell(props: {
   auth: SolidConvexAuth;
+  onSignOut?: () => Promise<void>;
   user: Accessor<DemoUser | null>;
   children: JSX.Element;
 }) {
@@ -31,7 +37,7 @@ export function TanStackDemoShell(props: {
     <FeedbackKitAppShell
       currentPath={() => location().pathname}
       navItems={navItems}
-      onSignOut={props.auth.signOut}
+      onSignOut={props.onSignOut ?? props.auth.signOut}
       renderLink={renderLink}
       subtitle="public todo demo"
       title="solid-convex-public"
