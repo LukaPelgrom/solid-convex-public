@@ -5,7 +5,7 @@ import {
   demoRoles,
   parseDemoRole,
   type DemoRole,
-} from "@solid-configs-public/permissions";
+} from "@solid-convex-public/permissions";
 import { m, msg } from "./i18n";
 import { Icon } from "./icons";
 import {

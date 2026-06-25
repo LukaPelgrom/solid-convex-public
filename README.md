@@ -1,4 +1,4 @@
-# Solid Configs Public
+# Solid Convex Public
 
 A small public Solid + Convex reference repo focused on a server-backed Todo app.
 
@@ -74,8 +74,8 @@ Then add the dependency from that app:
 ```json
 {
   "dependencies": {
-    "@solid-configs-public/core": "workspace:*",
-    "@solid-configs-public/permissions": "workspace:*"
+    "@solid-convex-public/core": "workspace:*",
+    "@solid-convex-public/permissions": "workspace:*"
   }
 }
 ```

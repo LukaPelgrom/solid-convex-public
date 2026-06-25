@@ -8,7 +8,7 @@ import {
   createSolidConvexServer,
   prefetchBatch,
   prefetchConvexBatch,
-} from "../src/lib/solid-configs-public";
+} from "../src/lib/solid-convex-public";
 
 type BrowserClient = NonNullable<
   Parameters<typeof createSolidConvex>[0]["client"]
@@ -134,7 +134,7 @@ const createServerClient = (queryResult: unknown) => {
   };
 };
 
-describe("Solid Configs Public prefetch cache", () => {
+describe("Solid Convex Public prefetch cache", () => {
   test("server prefetch snapshots hydrate the browser cache for useQuery", async () => {
     const serverClient = createServerClient(prefetchedItems);
     const server = createSolidConvexServer({
@@ -351,7 +351,7 @@ describe("Solid Configs Public prefetch cache", () => {
   });
 });
 
-describe("Solid Configs Public optimistic mutation cache", () => {
+describe("Solid Convex Public optimistic mutation cache", () => {
   test("optimistic updates write through to subscribed query cache", async () => {
     const deferred = createDeferred<{ ok: true }>();
     const browserClient = createBrowserClient([], {

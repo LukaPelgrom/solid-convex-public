@@ -1,4 +1,4 @@
-# @solid-configs-public/core
+# @solid-convex-public/core
 
 Reusable Solid helpers for Convex-backed apps.
 
@@ -10,7 +10,7 @@ Exports:
 - Better Auth token-provider helpers for Convex auth.
 - Shared UI primitives and the app shell used by the Todo demo.
 
-Use `@solid-configs-public/permissions` alongside this package for shared role
+Use `@solid-convex-public/permissions` alongside this package for shared role
 policies and Solid helpers like `PermissionProvider`, `useRolePermission`, and
 `Protected`.
 

@@ -8,7 +8,7 @@ import {
 import {
   assertPermission,
   canManageDemoItems,
-} from "@solid-configs-public/permissions";
+} from "@solid-convex-public/permissions";
 import {
   getCurrentUserProfileForCtx,
   getCurrentUserSubjectForCtx,
@@ -212,10 +212,10 @@ export const resetMine = mutation({
     await insertTodo(ctx, {
       notes: "Kept server-side in Convex.",
       sortOrder: 0,
-      title: "Ship the Solid Configs Public demo",
+      title: "Ship the Solid Convex Public demo",
     });
     await insertTodo(ctx, {
-      notes: "The list subscribes with @solid-configs-public/core.",
+      notes: "The list subscribes with @solid-convex-public/core.",
       sortOrder: 1,
       title: "Animate list mutations",
     });

@@ -1,5 +1,5 @@
 {
-  "name": "@solid-configs-public/core",
+  "name": "@solid-convex-public/core",
   "version": "0.0.0",
   "type": "module",
   "exports": {
@@ -15,7 +15,7 @@
     "@ark-ui/solid": "^5.25.1",
     "@convex-dev/better-auth": "^0.12.4",
     "@kobalte/core": "^0.13.11",
-    "@solid-configs-public/permissions": "workspace:*",
+    "@solid-convex-public/permissions": "workspace:*",
     "@solid-primitives/event-listener": "^2.4.3",
     "@solid-primitives/keyboard": "^1.3.3",
     "@solid-primitives/mouse": "^2.1.4",

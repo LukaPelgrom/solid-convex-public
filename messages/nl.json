@@ -1,6 +1,6 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "auth_brand": "solid-configs-public",
+  "auth_brand": "solid-convex-public",
   "auth_sign_in_title": "Inloggen",
   "auth_sign_in_description": "Vul je e-mailadres en wachtwoord in om door te gaan.",
   "auth_register_title": "Gebruiker aanmaken",
@@ -18,7 +18,7 @@
   "auth_registration_failed": "Registratie mislukt.",
   "auth_show_password": "Wachtwoord tonen",
   "auth_hide_password": "Wachtwoord verbergen",
-  "shell_product": "Solid Configs Public",
+  "shell_product": "Solid Convex Public",
   "shell_tagline": "Solid + Convex",
   "shell_menu": "Menu",
   "shell_sign_out": "Uitloggen",

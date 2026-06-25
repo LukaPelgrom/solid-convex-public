@@ -15,9 +15,11 @@ const registerUser = async (page: Page) => {
   await page.getByLabel("Name").fill(userName);
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("Welcome01!");
-  await page.getByRole("button", { name: "Create account" }).click();
+  const createAccount = page.getByRole("button", { name: "Create account" });
+  await expect(createAccount).toBeEnabled();
+  await createAccount.click();
 
-  await expect(page).toHaveURL(`${demoUrl}/`);
+  await expect(page).toHaveURL(`${demoUrl}/todos`, { timeout: 30_000 });
 
   return { email, suffix, userName };
 };
@@ -78,11 +80,11 @@ test("TanStack todos are server-backed, auth-attributed, and synced across tabs"
 
     await pageA.getByRole("button", { name: "Reset" }).click();
     await expectTodoTitles(pageB, [
-      "Ship the Solid Configs Public demo",
+      "Ship the Solid Convex Public demo",
       "Animate list mutations",
     ]);
     await expect(
-      todoRow(pageB, "Ship the Solid Configs Public demo"),
+      todoRow(pageB, "Ship the Solid Convex Public demo"),
     ).toContainText(`Created by ${userName}`);
 
     await addTodo(pageA, firstTitle, firstNotes);
@@ -102,21 +104,21 @@ test("TanStack todos are server-backed, auth-attributed, and synced across tabs"
     await expectTodoTitles(pageB, [
       secondTitle,
       firstTitle,
-      "Ship the Solid Configs Public demo",
+      "Ship the Solid Convex Public demo",
       "Animate list mutations",
     ]);
 
     await pageA.getByRole("button", { name: "Move first to end" }).click();
     await expectTodoTitles(pageB, [
       firstTitle,
-      "Ship the Solid Configs Public demo",
+      "Ship the Solid Convex Public demo",
       "Animate list mutations",
       secondTitle,
     ]);
 
     await pageA.getByRole("button", { name: "Swap first two" }).click();
     await expectTodoTitles(pageB, [
-      "Ship the Solid Configs Public demo",
+      "Ship the Solid Convex Public demo",
       firstTitle,
       "Animate list mutations",
       secondTitle,

@@ -5,8 +5,8 @@ import {
   useRouter,
 } from "@tanstack/solid-router";
 import { Show, createEffect } from "solid-js";
-import type { SolidConvex } from "@solid-configs-public/core";
-import { PermissionProvider } from "@solid-configs-public/permissions/solid";
+import type { SolidConvex } from "@solid-convex-public/core";
+import { PermissionProvider } from "@solid-convex-public/permissions/solid";
 import type { SolidConvexAuth } from "../demo";
 import { normalizeAuthRedirect } from "../demo/auth-redirect";
 import { TanStackDemoShell } from "../demo-shell";

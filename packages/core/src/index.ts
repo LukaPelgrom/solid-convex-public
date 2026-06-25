@@ -15,8 +15,8 @@ export {
   useMutation,
   useQuery,
   useSolidConvex,
-} from "./lib/solid-configs-public";
-export { SolidConvexProvider } from "./lib/solid-configs-public/provider";
+} from "./lib/solid-convex-public";
+export { SolidConvexProvider } from "./lib/solid-convex-public/provider";
 export type {
   AuthTokenProvider,
   CacheEntry,
@@ -36,7 +36,7 @@ export type {
   TuplePrefetchEntry,
   UseQueryResult,
   UseQueryState,
-} from "./lib/solid-configs-public";
+} from "./lib/solid-convex-public";
 export * from "./i18n";
 export * from "./ui";
 export * from "./icons";

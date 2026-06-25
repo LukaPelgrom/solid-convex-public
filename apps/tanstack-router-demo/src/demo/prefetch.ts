@@ -1,5 +1,5 @@
-import { api } from "@solid-configs-public/backend/convex/_generated/api";
-import type { SolidConvexReader } from "@solid-configs-public/core";
+import { api } from "@solid-convex-public/backend/convex/_generated/api";
+import type { SolidConvexReader } from "@solid-convex-public/core";
 import { isConvexConfigured } from "./runtime";
 import type { DemoUser, PrefetchedDemoData } from "./types";
 

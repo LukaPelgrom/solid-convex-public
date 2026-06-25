@@ -1,7 +1,7 @@
 import { createMemo } from "solid-js";
-import { api } from "@solid-configs-public/backend/convex/_generated/api";
-import type { Id } from "@solid-configs-public/backend/convex/_generated/dataModel";
-import { mutation, query } from "@solid-configs-public/core";
+import { api } from "@solid-convex-public/backend/convex/_generated/api";
+import type { Id } from "@solid-convex-public/backend/convex/_generated/dataModel";
+import { mutation, query } from "@solid-convex-public/core";
 import type { SolidConvexAuth } from "./auth";
 import type { TodoFormInput, TodoItem } from "./types";
 

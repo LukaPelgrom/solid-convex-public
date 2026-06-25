@@ -1,6 +1,6 @@
 import { render } from "solid-js/web";
 import { RouterProvider, createRouter } from "@tanstack/solid-router";
-import { SolidConvexProvider } from "@solid-configs-public/core";
+import { SolidConvexProvider } from "@solid-convex-public/core";
 import { routeTree } from "./routeTree.gen";
 import { createDemoConvex, createSolidConvexAuth } from "./demo";
 import type { RouterContext } from "./routes/__root";

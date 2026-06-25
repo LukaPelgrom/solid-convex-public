@@ -1,11 +1,11 @@
 import {
   createSolidConvex,
   createSolidConvexServer,
-} from "@solid-configs-public/core";
+} from "@solid-convex-public/core";
 import {
   createBetterAuthConvexClient,
   createBetterAuthConvexTokenProvider,
-} from "@solid-configs-public/core/better-auth";
+} from "@solid-convex-public/core/better-auth";
 
 const configuredConvexUrl =
   import.meta.env.VITE_CONVEX_URL ?? import.meta.env.PUBLIC_CONVEX_URL;
@@ -20,7 +20,7 @@ export const isConvexConfigured = () => Boolean(configuredConvexUrl);
 
 export const authClient = createBetterAuthConvexClient({
   siteUrl: convexSiteUrl,
-  storagePrefix: "solid-configs-public",
+  storagePrefix: "solid-convex-public",
 });
 
 export const getConvexAuthToken =

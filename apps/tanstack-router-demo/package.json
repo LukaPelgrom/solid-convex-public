@@ -1,5 +1,5 @@
 {
-  "name": "@solid-configs-public/tanstack-router-demo",
+  "name": "@solid-convex-public/tanstack-router-demo",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.9.0",
-    "@solid-configs-public/backend": "workspace:*",
-    "@solid-configs-public/core": "workspace:*",
-    "@solid-configs-public/permissions": "workspace:*",
+    "@solid-convex-public/backend": "workspace:*",
+    "@solid-convex-public/core": "workspace:*",
+    "@solid-convex-public/permissions": "workspace:*",
     "@solid-primitives/keyed": "^1.5.3",
     "@tanstack/solid-form": "^1.33.0",
     "@tanstack/solid-router": "^1.170.16",

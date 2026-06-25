@@ -4,7 +4,7 @@ import {
   parseDemoRole,
   subjectFromRole,
   type DemoRole,
-} from "@solid-configs-public/permissions";
+} from "@solid-convex-public/permissions";
 import { betterAuth, type BetterAuthOptions } from "better-auth/minimal";
 import { v } from "convex/values";
 import { components } from "./_generated/api";
@@ -45,7 +45,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
   const siteUrl = trustedOrigins[0] ?? defaultSiteUrls[0];
 
   return betterAuth({
-    appName: "solid-configs-public",
+    appName: "solid-convex-public",
     baseURL: process.env.CONVEX_SITE_URL,
     secret: process.env.BETTER_AUTH_SECRET,
     trustedOrigins,

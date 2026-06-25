@@ -16,8 +16,10 @@ const registerUser = async (page: import("@playwright/test").Page) => {
     .getByLabel("Email")
     .fill(`todos-autoanimate-${suffix}@example.com`);
   await page.getByLabel("Password").fill("Welcome01!");
-  await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).toHaveURL(`${demoUrl}/`);
+  const createAccount = page.getByRole("button", { name: "Create account" });
+  await expect(createAccount).toBeEnabled();
+  await createAccount.click();
+  await expect(page).toHaveURL(`${demoUrl}/todos`, { timeout: 30_000 });
 };
 
 test("todos reorder uses AutoAnimate on stable keyed rows", async ({
@@ -33,16 +35,16 @@ test("todos reorder uses AutoAnimate on stable keyed rows", async ({
 
   await page.getByRole("button", { name: "Reset" }).click();
   await expect(
-    page.getByText("Ship the Solid Configs Public demo"),
+    page.getByText("Ship the Solid Convex Public demo"),
   ).toBeVisible();
   await expect(page.getByText("Animate list mutations")).toBeVisible();
   await expect
     .poll(() => readTodoTitles(page))
-    .toEqual(["Ship the Solid Configs Public demo", "Animate list mutations"]);
+    .toEqual(["Ship the Solid Convex Public demo", "Animate list mutations"]);
 
   const before = await readTodoRows(page);
   expect(before.map((row) => row.title)).toEqual([
-    "Ship the Solid Configs Public demo",
+    "Ship the Solid Convex Public demo",
     "Animate list mutations",
   ]);
 
@@ -62,7 +64,7 @@ test("todos reorder uses AutoAnimate on stable keyed rows", async ({
 
   await expect
     .poll(() => readTodoTitles(page))
-    .toEqual(["Animate list mutations", "Ship the Solid Configs Public demo"]);
+    .toEqual(["Animate list mutations", "Ship the Solid Convex Public demo"]);
 
   const after = await readTodoRows(page);
   expect(after.map((row) => row.id)).toEqual([before[1].id, before[0].id]);

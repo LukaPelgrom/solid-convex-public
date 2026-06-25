@@ -14,8 +14,10 @@ const registerUser = async (page: import("@playwright/test").Page) => {
     .getByLabel("Email")
     .fill(`todos-navbar-visual-${suffix}@example.com`);
   await page.getByLabel("Password").fill("Welcome01!");
-  await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).toHaveURL(`${demoUrl}/`);
+  const createAccount = page.getByRole("button", { name: "Create account" });
+  await expect(createAccount).toBeEnabled();
+  await createAccount.click();
+  await expect(page).toHaveURL(`${demoUrl}/todos`, { timeout: 30_000 });
 };
 
 test("todos shell keeps navigation inside the viewport while content scrolls", async ({
@@ -30,7 +32,7 @@ test("todos shell keeps navigation inside the viewport while content scrolls", a
   ).toBeVisible();
   await page.getByRole("button", { name: "Reset" }).click();
   await expect(
-    page.getByText("Ship the Solid Configs Public demo"),
+    page.getByText("Ship the Solid Convex Public demo"),
   ).toBeVisible();
   await expect(page.getByTestId("web-solid-sidebar")).toBeVisible();
   await expect(page.getByTestId("web-solid-sidebar-user")).toBeVisible();

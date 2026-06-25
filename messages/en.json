@@ -1,6 +1,6 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "auth_brand": "solid-configs-public",
+  "auth_brand": "solid-convex-public",
   "auth_sign_in_title": "Sign in",
   "auth_sign_in_description": "Enter your email and password to continue.",
   "auth_register_title": "Create user",
@@ -18,7 +18,7 @@
   "auth_registration_failed": "Registration failed.",
   "auth_show_password": "Show password",
   "auth_hide_password": "Hide password",
-  "shell_product": "Solid Configs Public",
+  "shell_product": "Solid Convex Public",
   "shell_tagline": "Solid + Convex",
   "shell_menu": "Menu",
   "shell_sign_out": "Sign out",

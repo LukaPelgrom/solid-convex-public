@@ -2,7 +2,7 @@ import { createAutoAnimateDirective } from "@formkit/auto-animate/solid";
 import { Key } from "@solid-primitives/keyed";
 import { createForm } from "@tanstack/solid-form";
 import { createFileRoute, useRouter } from "@tanstack/solid-router";
-import type { Id } from "@solid-configs-public/backend/convex/_generated/dataModel";
+import type { Id } from "@solid-convex-public/backend/convex/_generated/dataModel";
 import {
   Badge,
   Button,
@@ -14,8 +14,8 @@ import {
   Input,
   PageHeader,
   Textarea,
-} from "@solid-configs-public/core";
-import { SideNavBarBreadcrumb } from "@solid-configs-public/core/shell";
+} from "@solid-convex-public/core";
+import { SideNavBarBreadcrumb } from "@solid-convex-public/core/shell";
 import { Show, createMemo, createSignal, type Accessor } from "solid-js";
 import { createTodos, type TodoFormInput, type TodoItem } from "../demo";
 

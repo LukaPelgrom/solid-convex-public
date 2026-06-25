@@ -7,7 +7,7 @@ import { createEffect } from "solid-js";
 import {
   DemoLoginForm,
   type AuthLinkRenderer,
-} from "@solid-configs-public/core";
+} from "@solid-convex-public/core";
 import {
   authRedirectHref,
   parseAuthRedirectSearch,

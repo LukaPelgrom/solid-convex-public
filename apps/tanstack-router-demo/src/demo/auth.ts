@@ -1,13 +1,16 @@
 import { createMemo, createSignal } from "solid-js";
-import { api } from "@solid-configs-public/backend/convex/_generated/api";
-import { mutation, query, useSolidConvex } from "@solid-configs-public/core";
+import { api } from "@solid-convex-public/backend/convex/_generated/api";
+import { mutation, query, useSolidConvex } from "@solid-convex-public/core";
 import {
   parseDemoRole,
   subjectFromRole,
   type PermissionSubject,
-} from "@solid-configs-public/permissions";
+} from "@solid-convex-public/permissions";
 import { authClient } from "./runtime";
 import type { DemoUser, RegisterInput, SignInInput } from "./types";
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export const createSolidConvexAuth = () => {
   const convex = useSolidConvex();
@@ -46,9 +49,32 @@ export const createSolidConvexAuth = () => {
   );
   const upsertDemoProfile = mutation(api.auth.upsertDemoProfile);
   const syncSession = async () => {
-    await authClient.updateSession();
     const nextSession = await authClient.getSession();
     setSessionData(nextSession.data ?? null);
+    authClient.updateSession();
+
+    return nextSession.data ?? null;
+  };
+
+  const waitForConvexAuth = async () => {
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      const nextSession = await syncSession();
+      if (!nextSession?.user?.id) {
+        await sleep(100);
+        continue;
+      }
+
+      const tokenResult = await authClient.convex.token({
+        fetchOptions: { throw: false },
+      });
+      if (tokenResult.data?.token) {
+        return;
+      }
+
+      await sleep(100);
+    }
+
+    throw new Error("Unable to establish the Convex auth session.");
   };
 
   const refreshAuthState = async () => {
@@ -59,12 +85,16 @@ export const createSolidConvexAuth = () => {
   };
 
   const signIn = async (input: SignInInput) => {
-    const signInResult = await authClient.signIn.email({
+    const signInRequest = authClient.signIn.email({
       email: input.email.trim().toLowerCase(),
       password: input.password,
     });
+    const signInResult = await Promise.race([
+      signInRequest,
+      sleep(2_000).then(() => null),
+    ]);
 
-    if (signInResult.error) {
+    if (signInResult?.error) {
       throw new Error(signInResult.error.message ?? "Sign in failed.");
     }
 
@@ -84,6 +114,7 @@ export const createSolidConvexAuth = () => {
       throw new Error(signUpResult.error.message ?? "Registration failed.");
     }
 
+    await waitForConvexAuth();
     await refreshAuthState();
     void upsertDemoProfile({ role })
       .then(() => refreshAuthState())

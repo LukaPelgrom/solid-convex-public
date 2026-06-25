@@ -17,7 +17,7 @@ export const createBetterAuthConvexClient = (
     plugins: [
       convexClient(),
       crossDomainClient({
-        storagePrefix: options.storagePrefix ?? "solid-configs-public",
+        storagePrefix: options.storagePrefix ?? "solid-convex-public",
       }),
     ],
   });

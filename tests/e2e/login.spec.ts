@@ -26,14 +26,23 @@ const registerAndSignIn = async (page: Page) => {
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
 
   await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(`${demoUrl}/?redirect=%2Ftodos`);
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
 
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("Welcome01!");
+  await expect(page.getByLabel("Email")).toHaveValue(email);
+  await expect(page.getByLabel("Password")).toHaveValue("Welcome01!");
   const signIn = page.getByRole("button", { name: "Sign in" });
   await expect(signIn).toBeEnabled();
-  await signIn.click();
+  await Promise.all([
+    page.waitForResponse((response) =>
+      response.url().includes("/api/auth/sign-in/email"),
+    ),
+    signIn.click(),
+  ]);
 
+  await expect(page).toHaveURL(`${demoUrl}/todos`, { timeout: 30_000 });
   await expect(
     page.getByRole("heading", { name: "Todo CRUD playground" }),
   ).toBeVisible();

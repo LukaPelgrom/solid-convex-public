@@ -1,6 +1,6 @@
-import type { Id } from "@solid-configs-public/backend/convex/_generated/dataModel";
-import type { DemoRole } from "@solid-configs-public/permissions";
-import type { RegisterInput, SignInInput } from "@solid-configs-public/core";
+import type { Id } from "@solid-convex-public/backend/convex/_generated/dataModel";
+import type { DemoRole } from "@solid-convex-public/permissions";
+import type { RegisterInput, SignInInput } from "@solid-convex-public/core";
 
 export type { RegisterInput, SignInInput };
 

@@ -1,5 +1,5 @@
 {
-  "name": "@solid-configs-public/backend",
+  "name": "@solid-convex-public/backend",
   "private": true,
   "type": "module",
   "exports": {
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@convex-dev/better-auth": "^0.12.4",
-    "@solid-configs-public/permissions": "workspace:*",
+    "@solid-convex-public/permissions": "workspace:*",
     "better-auth": "^1.6.19",
     "convex": "^1.41.0"
   },

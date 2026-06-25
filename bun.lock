@@ -18,12 +18,12 @@
       },
     },
     "apps/tanstack-router-demo": {
-      "name": "@solid-configs-public/tanstack-router-demo",
+      "name": "@solid-convex-public/tanstack-router-demo",
       "dependencies": {
         "@formkit/auto-animate": "^0.9.0",
-        "@solid-configs-public/backend": "workspace:*",
-        "@solid-configs-public/core": "workspace:*",
-        "@solid-configs-public/permissions": "workspace:*",
+        "@solid-convex-public/backend": "workspace:*",
+        "@solid-convex-public/core": "workspace:*",
+        "@solid-convex-public/permissions": "workspace:*",
         "@solid-primitives/keyed": "^1.5.3",
         "@tanstack/solid-form": "^1.33.0",
         "@tanstack/solid-router": "^1.170.16",
@@ -38,10 +38,10 @@
       },
     },
     "packages/backend": {
-      "name": "@solid-configs-public/backend",
+      "name": "@solid-convex-public/backend",
       "dependencies": {
         "@convex-dev/better-auth": "^0.12.4",
-        "@solid-configs-public/permissions": "workspace:*",
+        "@solid-convex-public/permissions": "workspace:*",
         "better-auth": "^1.6.19",
         "convex": "^1.41.0",
       },
@@ -50,13 +50,13 @@
       },
     },
     "packages/core": {
-      "name": "@solid-configs-public/core",
+      "name": "@solid-convex-public/core",
       "version": "0.0.0",
       "dependencies": {
         "@ark-ui/solid": "^5.25.1",
         "@convex-dev/better-auth": "^0.12.4",
         "@kobalte/core": "^0.13.11",
-        "@solid-configs-public/permissions": "workspace:*",
+        "@solid-convex-public/permissions": "workspace:*",
         "@solid-primitives/event-listener": "^2.4.3",
         "@solid-primitives/keyboard": "^1.3.3",
         "@solid-primitives/mouse": "^2.1.4",
@@ -87,7 +87,7 @@
       },
     },
     "packages/permissions": {
-      "name": "@solid-configs-public/permissions",
+      "name": "@solid-convex-public/permissions",
       "version": "0.0.0",
       "dependencies": {
         "solid-js": "^1.9.12",
@@ -314,13 +314,13 @@
 
     "@sinclair/typebox": ["@sinclair/typebox@0.31.28", "", {}, "sha512-/s55Jujywdw/Jpan+vsy6JZs1z2ZTGxTmbZTPiuSL2wz9mfzA2gN1zzaqmvfi4pq+uOt7Du85fkiwv5ymW84aQ=="],
 
-    "@solid-configs-public/backend": ["@solid-configs-public/backend@workspace:packages/backend"],
+    "@solid-convex-public/backend": ["@solid-convex-public/backend@workspace:packages/backend"],
 
-    "@solid-configs-public/core": ["@solid-configs-public/core@workspace:packages/core"],
+    "@solid-convex-public/core": ["@solid-convex-public/core@workspace:packages/core"],
 
-    "@solid-configs-public/permissions": ["@solid-configs-public/permissions@workspace:packages/permissions"],
+    "@solid-convex-public/permissions": ["@solid-convex-public/permissions@workspace:packages/permissions"],
 
-    "@solid-configs-public/tanstack-router-demo": ["@solid-configs-public/tanstack-router-demo@workspace:apps/tanstack-router-demo"],
+    "@solid-convex-public/tanstack-router-demo": ["@solid-convex-public/tanstack-router-demo@workspace:apps/tanstack-router-demo"],
 
     "@solid-primitives/deep": ["@solid-primitives/deep@0.2.10", "", { "dependencies": { "@solid-primitives/memo": "^1.3.10" }, "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-uzhXr/cMABsGkTcV3yuviZjTDmj44wb2JetuJ5O8NCugz4Ug/6XlPjT8ISMPYV7eCbC/gFhgt7e60+TRpl2Upg=="],
 

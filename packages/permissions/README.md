@@ -1,4 +1,4 @@
-# @solid-configs-public/permissions
+# @solid-convex-public/permissions
 
 Small CLP-style permission package for Solid + Convex demos.
 
@@ -7,7 +7,7 @@ Exports:
 - `demoRoles`, `DemoRole`, and `demoRoleLabels`
 - `createRolePolicy`, `evaluatePolicy`, `hasPermission`, and `assertPermission`
 - `canManageDemoItems`, `canViewAdminRoute`, and `canAccessAdminRoute`
-- Solid helpers from `@solid-configs-public/permissions/solid`: `PermissionProvider`, `useRolePermission`, and `Protected`
+- Solid helpers from `@solid-convex-public/permissions/solid`: `PermissionProvider`, `useRolePermission`, and `Protected`
 
 The demo intentionally separates visibility from access:
 

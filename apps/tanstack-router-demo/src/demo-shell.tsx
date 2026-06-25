@@ -4,7 +4,7 @@ import {
   FeedbackKitAppShell,
   type FeedbackKitLinkRenderer,
   type FeedbackKitNavItem,
-} from "@solid-configs-public/core/shell";
+} from "@solid-convex-public/core/shell";
 import type { DemoUser, SolidConvexAuth } from "./demo";
 
 const renderLink: FeedbackKitLinkRenderer = (props) => (
@@ -34,7 +34,7 @@ export function TanStackDemoShell(props: {
       onSignOut={props.auth.signOut}
       renderLink={renderLink}
       subtitle="public todo demo"
-      title="solid-configs-public"
+      title="solid-convex-public"
       user={props.user}
     >
       {props.children}

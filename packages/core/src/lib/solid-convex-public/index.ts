@@ -810,7 +810,7 @@ export function createSolidConvex(options: CreateSolidConvexOptions) {
   const getClient = () => {
     if (isServer) {
       throw new Error(
-        "The Solid Configs Public browser client is unavailable during SSR. Use createSolidConvexServer for server-side queries.",
+        "The Solid Convex Public browser client is unavailable during SSR. Use createSolidConvexServer for server-side queries.",
       );
     }
 
