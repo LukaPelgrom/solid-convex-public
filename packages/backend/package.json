@@ -1,0 +1,30 @@
+{
+  "name": "@solid-configs-public/backend",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./convex/_generated/api": {
+      "types": "./convex/_generated/api.d.ts",
+      "default": "./convex/_generated/api.js"
+    },
+    "./convex/_generated/api.js": "./convex/_generated/api.js",
+    "./convex/_generated/dataModel": {
+      "types": "./convex/_generated/dataModel.d.ts",
+      "default": "./convex/_generated/dataModel.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "convex dev",
+    "codegen": "convex codegen",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@convex-dev/better-auth": "^0.12.4",
+    "@solid-configs-public/permissions": "workspace:*",
+    "better-auth": "^1.6.19",
+    "convex": "^1.41.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,177 @@
+@import "@solid-configs-public/core/styles.css";
+
+.todos-page {
+  max-width: 56rem;
+}
+
+.todos-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  align-items: start;
+  column-gap: 1rem;
+  row-gap: 1rem;
+}
+
+.todos-composer,
+.todos-list-card,
+.todos-debugger {
+  min-width: 0;
+}
+
+.todos-stats,
+.todos-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.5rem;
+  row-gap: 0.5rem;
+}
+
+.todos-list {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.75rem;
+}
+
+.todos-empty {
+  border: 1px dashed hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--muted) / 0.35);
+  padding: 1.5rem;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+}
+
+.todos-empty p:last-child {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.todo-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  column-gap: 0.75rem;
+  row-gap: 0.75rem;
+  border: 1px solid hsl(var(--border) / 0.75);
+  border-radius: calc(var(--radius) + 2px);
+  background: hsl(var(--card));
+  padding: 0.875rem 1rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.todo-row--done {
+  background: hsl(var(--muted) / 0.35);
+}
+
+.todo-row--editing {
+  flex-direction: column;
+}
+
+.todo-row-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: flex-start;
+  column-gap: 0.75rem;
+}
+
+.todo-row-toggle {
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  place-items: center;
+  margin-top: 0.125rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.todo-row-check {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  border: 1.5px solid hsl(var(--border));
+  border-radius: 999px;
+  background: hsl(var(--background));
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.todo-row-check[data-checked="true"] {
+  border-color: hsl(var(--primary));
+  background:
+    radial-gradient(
+      circle at center,
+      hsl(var(--primary-foreground)) 0 35%,
+      transparent 36%
+    ),
+    hsl(var(--primary));
+}
+
+.todo-row-copy {
+  min-width: 0;
+}
+
+.todo-row-copy h3 {
+  color: hsl(var(--foreground));
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.todo-row-subtitle {
+  margin-top: 0.125rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.todo-row-copy p {
+  margin-top: 0.25rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.todo-row-actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.5rem;
+  row-gap: 0.5rem;
+}
+
+.todo-row-edit {
+  width: 100%;
+}
+
+.todos-debugger-output {
+  overflow: auto;
+  margin: 0;
+  border: 1px solid hsl(var(--border) / 0.75);
+  border-radius: calc(var(--radius) - 2px);
+  background: hsl(var(--muted) / 0.25);
+  padding: 0.875rem;
+  color: hsl(var(--foreground));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 960px) {
+  .todos-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .todo-row {
+    flex-direction: column;
+  }
+
+  .todo-row-actions {
+    width: 100%;
+  }
+}
