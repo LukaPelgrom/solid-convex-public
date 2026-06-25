@@ -34,7 +34,7 @@ export type CreateSolidConvexOptions =
       client?: never;
       getAuthToken?: AuthTokenProvider;
       initialCache?: ConvexCacheSnapshot;
-      url: string;
+      url?: string;
     };
 
 export type CreateSolidConvexServerOptions =
@@ -50,7 +50,7 @@ export type CreateSolidConvexServerOptions =
       client?: never;
       getAuthToken?: () => Awaitable<string | null | undefined>;
       initialCache?: ConvexCacheSnapshot;
-      url: string;
+      url?: string;
     };
 
 type NoArgs<Args> = keyof Args extends never ? true : false;
@@ -129,6 +129,7 @@ type UseQueryBaseOptions<Query extends FunctionReference<"query">> = {
   onError?: (error: Error) => void;
   debug?: boolean;
   enabled?: boolean | (() => boolean);
+  initialData?: FunctionReturnType<Query> | (() => FunctionReturnType<Query>);
 };
 
 export type UseQueryOptions<Query extends FunctionReference<"query">> =
@@ -142,10 +143,23 @@ export type UseQueryOptionsTuple<Query extends FunctionReference<"query">> =
     ? [options?: UseQueryOptions<Query>]
     : [options: UseQueryOptions<Query>];
 
-export type QueryStatus = "idle" | "loading" | "success" | "error";
+type UseQueryOptionsWithInitialDataTuple<
+  Query extends FunctionReference<"query">,
+> =
+  NoArgs<FunctionArgs<Query>> extends true
+    ? [options: UseQueryOptionsWithInitialData<Query>]
+    : [options: UseQueryOptionsWithInitialData<Query>];
 
-export type UseQueryState<Data> = {
-  data: Accessor<Data | undefined>;
+export type QueryStatus = "idle" | "loading" | "success" | "error";
+export type MutationStatus = "idle" | "pending" | "success" | "error";
+
+type QueryDataAccessorValue<
+  Data,
+  HasInitialData extends boolean,
+> = HasInitialData extends true ? Data : Data | undefined;
+
+export type UseQueryState<Data, HasInitialData extends boolean = false> = {
+  data: Accessor<QueryDataAccessorValue<Data, HasInitialData>>;
   error: Accessor<Error | undefined>;
   isError: Accessor<boolean>;
   isFetching: Accessor<boolean>;
@@ -155,9 +169,49 @@ export type UseQueryState<Data> = {
   status: Accessor<QueryStatus>;
 };
 
-export type UseQueryResult<Data> = Accessor<Data | undefined> &
-  readonly [Accessor<Data | undefined>, UseQueryState<Data>] & {
-    state: UseQueryState<Data>;
+export type UseQueryResult<
+  Data,
+  HasInitialData extends boolean = false,
+> = Accessor<QueryDataAccessorValue<Data, HasInitialData>> &
+  readonly [
+    Accessor<QueryDataAccessorValue<Data, HasInitialData>>,
+    UseQueryState<Data, HasInitialData>,
+  ] & {
+    state: UseQueryState<Data, HasInitialData>;
+  };
+
+export type UseMutationState<Result, Variables> = {
+  data: Accessor<Result | undefined>;
+  error: Accessor<ConvexError | undefined>;
+  isError: Accessor<boolean>;
+  isIdle: Accessor<boolean>;
+  isLoading: Accessor<boolean>;
+  isPending: Accessor<boolean>;
+  isSuccess: Accessor<boolean>;
+  reset: () => void;
+  status: Accessor<MutationStatus>;
+  variables: Accessor<Variables | undefined>;
+};
+
+type MutationFunction<Mutation extends FunctionReference<"mutation">> = (
+  ...argsTuple: MutationArgsTuple<Mutation>
+) => Promise<FunctionReturnType<Mutation>>;
+
+export type UseMutationResult<Mutation extends FunctionReference<"mutation">> =
+  MutationFunction<Mutation> &
+    readonly [
+      MutationFunction<Mutation>,
+      UseMutationState<FunctionReturnType<Mutation>, FunctionArgs<Mutation>>,
+    ] & {
+      state: UseMutationState<
+        FunctionReturnType<Mutation>,
+        FunctionArgs<Mutation>
+      >;
+    };
+
+type UseQueryOptionsWithInitialData<Query extends FunctionReference<"query">> =
+  UseQueryOptions<Query> & {
+    initialData: FunctionReturnType<Query> | (() => FunctionReturnType<Query>);
   };
 
 type CacheSource =
@@ -176,7 +230,7 @@ export type CacheEntry<T = unknown> = {
 
 export type ConvexCacheSnapshot = Array<[string, CacheEntry]>;
 
-type OptimisticUpdate<
+export type OptimisticUpdate<
   Mutation extends FunctionReference<"mutation">,
   Query extends FunctionReference<"query">,
 > = {
@@ -187,6 +241,18 @@ type OptimisticUpdate<
     mutationArgs: FunctionArgs<Mutation>,
   ) => FunctionReturnType<Query> | undefined;
   rollbackOnError?: boolean;
+};
+
+export type UseMutationOptions<
+  Mutation extends FunctionReference<"mutation">,
+  Query extends FunctionReference<"query"> = FunctionReference<"query">,
+> = {
+  onSuccess?: (result: FunctionReturnType<Mutation>) => void;
+  onError?: (error: ConvexError) => void;
+  optimistic?:
+    | OptimisticUpdate<Mutation, Query>
+    | OptimisticUpdate<Mutation, Query>[];
+  debounce?: number;
 };
 
 class ReactiveCacheMap<K, V> implements Map<K, V> {
@@ -278,11 +344,11 @@ class ReactiveCacheMap<K, V> implements Map<K, V> {
 
 const createConvexCache = () => new ReactiveCacheMap<string, CacheEntry>();
 
-const createQueryResult = <Data>(
-  data: Accessor<Data | undefined>,
-  state: UseQueryState<Data>,
-): UseQueryResult<Data> => {
-  const result = data as UseQueryResult<Data>;
+const createQueryResult = <Data, HasInitialData extends boolean = false>(
+  data: Accessor<QueryDataAccessorValue<Data, HasInitialData>>,
+  state: UseQueryState<Data, HasInitialData>,
+): UseQueryResult<Data, HasInitialData> => {
+  const result = data as UseQueryResult<Data, HasInitialData>;
 
   Object.defineProperties(result, {
     0: { value: data },
@@ -291,6 +357,27 @@ const createQueryResult = <Data>(
     [Symbol.iterator]: {
       value: function* iterator() {
         yield data;
+        yield state;
+      },
+    },
+  });
+
+  return result;
+};
+
+const createMutationResult = <Mutation extends FunctionReference<"mutation">>(
+  mutate: MutationFunction<Mutation>,
+  state: UseMutationState<FunctionReturnType<Mutation>, FunctionArgs<Mutation>>,
+): UseMutationResult<Mutation> => {
+  const result = mutate as UseMutationResult<Mutation>;
+
+  Object.defineProperties(result, {
+    0: { value: mutate },
+    1: { value: state },
+    state: { value: state },
+    [Symbol.iterator]: {
+      value: function* iterator() {
+        yield mutate;
         yield state;
       },
     },
@@ -400,6 +487,7 @@ const createPrefetcher =
     cache: ReactiveCacheMap<string, CacheEntry>,
     inflightRequests: Map<string, Promise<unknown>>,
     source: Source,
+    isEnabled: () => boolean,
     runQuery: <Query extends FunctionReference<"query">>(
       query: Query,
       args: FunctionArgs<Query>,
@@ -409,6 +497,10 @@ const createPrefetcher =
     query: Query,
     ...argsTuple: QueryArgsTuple<Query>
   ): Promise<FunctionReturnType<Query> | undefined> => {
+    if (!isEnabled()) {
+      return undefined;
+    }
+
     const fullArgs = normalizeQueryArgs(argsTuple[0]);
     const key = convexQueryKey([
       query,
@@ -480,20 +572,37 @@ export async function prefetchBatch<
 
 export const prefetchConvexBatch = prefetchBatch;
 
-const createUseQuery =
-  (
-    cache: ReactiveCacheMap<string, CacheEntry>,
-    getClient: () => ConvexClient,
-  ) =>
-  <Query extends FunctionReference<"query">>(
+const resolveInitialData = <Data>(
+  initialData: Data | (() => Data) | undefined,
+): Data | undefined =>
+  typeof initialData === "function"
+    ? (initialData as () => Data)()
+    : initialData;
+
+const createUseQuery = (
+  cache: ReactiveCacheMap<string, CacheEntry>,
+  isInstanceEnabled: () => boolean,
+  getClient: () => ConvexClient,
+) => {
+  function useQueryForInstance<Query extends FunctionReference<"query">>(
+    query: Query,
+    ...optionsTuple: UseQueryOptionsWithInitialDataTuple<Query>
+  ): UseQueryResult<FunctionReturnType<Query>, true>;
+  function useQueryForInstance<Query extends FunctionReference<"query">>(
     query: Query,
     ...optionsTuple: UseQueryOptionsTuple<Query>
-  ): UseQueryResult<FunctionReturnType<Query>> => {
+  ): UseQueryResult<FunctionReturnType<Query>>;
+  function useQueryForInstance<Query extends FunctionReference<"query">>(
+    query: Query,
+    ...optionsTuple: UseQueryOptionsTuple<Query>
+  ): UseQueryResult<FunctionReturnType<Query>, boolean> {
     const options = optionsTuple[0];
     const isEnabled = () =>
-      typeof options?.enabled === "function"
-        ? options.enabled()
-        : (options?.enabled ?? true);
+      !isInstanceEnabled()
+        ? false
+        : typeof options?.enabled === "function"
+          ? options.enabled()
+          : (options?.enabled ?? true);
 
     const fullArgs = createMemo(() =>
       options?.args ? options.args() : emptyQueryArgs<Query>(),
@@ -502,6 +611,9 @@ const createUseQuery =
       convexQueryKey([query, fullArgs() as Record<string, unknown>, {}]),
     );
     const [error, setError] = createSignal<Error>();
+    const initialData = createMemo(() =>
+      resolveInitialData(options?.initialData),
+    );
 
     createEffect(() => {
       isEnabled();
@@ -511,11 +623,13 @@ const createUseQuery =
 
     const value = createMemo<FunctionReturnType<Query> | undefined>(() => {
       if (!isEnabled()) {
-        return undefined;
+        return initialData();
       }
 
       const cached = cache.get(cacheKey());
-      return cached?.data as FunctionReturnType<Query> | undefined;
+      return (
+        (cached?.data as FunctionReturnType<Query> | undefined) ?? initialData()
+      );
     });
     const status = createMemo<QueryStatus>(() => {
       if (!isEnabled()) {
@@ -602,10 +716,14 @@ const createUseQuery =
     });
 
     return createQueryResult(value, state);
-  };
+  }
+
+  return useQueryForInstance;
+};
 
 const createUseMutation = (
   cache: ReactiveCacheMap<string, CacheEntry>,
+  isEnabled: () => boolean,
   getClient: () => ConvexClient,
 ) =>
   function useMutationForInstance<
@@ -613,29 +731,49 @@ const createUseMutation = (
     Query extends FunctionReference<"query"> = FunctionReference<"query">,
   >(
     mutation: Mutation,
-    options?: {
-      onSuccess?: (result: FunctionReturnType<Mutation>) => void;
-      onError?: (error: ConvexError) => void;
-      optimistic?:
-        | OptimisticUpdate<Mutation, Query>
-        | OptimisticUpdate<Mutation, Query>[];
-      debounce?: number;
-    },
-  ): (
-    ...argsTuple: MutationArgsTuple<Mutation>
-  ) => Promise<FunctionReturnType<Mutation>> {
+    options?: UseMutationOptions<Mutation, Query>,
+  ): UseMutationResult<Mutation> {
     const debounceMs = options?.debounce ?? 0;
     const optimisticEntries = normalizeOptimistic(options?.optimistic);
+    const [data, setData] = createSignal<FunctionReturnType<Mutation>>();
+    const [error, setError] = createSignal<ConvexError>();
+    const [status, setStatus] = createSignal<MutationStatus>("idle");
+    const [variables, setVariables] = createSignal<FunctionArgs<Mutation>>();
     let debounceTimeout: ReturnType<typeof setTimeout> | undefined;
     let pendingResolve:
       | ((value: FunctionReturnType<Mutation>) => void)
       | undefined;
     let pendingReject: ((error: Error) => void) | undefined;
+    let latestRequestId = 0;
     let appliedOptimisticEntries: Array<{
       key: string;
       previous?: CacheEntry;
       shouldRollback: boolean;
     }> = [];
+
+    const reset = () => {
+      latestRequestId += 1;
+      setData(undefined);
+      setError(undefined);
+      setStatus("idle");
+      setVariables(undefined);
+    };
+
+    const state: UseMutationState<
+      FunctionReturnType<Mutation>,
+      FunctionArgs<Mutation>
+    > = {
+      data,
+      error,
+      isError: () => status() === "error",
+      isIdle: () => status() === "idle",
+      isLoading: () => status() === "pending",
+      isPending: () => status() === "pending",
+      isSuccess: () => status() === "success",
+      reset,
+      status,
+      variables,
+    };
 
     const applyOptimisticUpdate = (
       optimistic: OptimisticUpdate<Mutation, Query>,
@@ -693,13 +831,23 @@ const createUseMutation = (
 
     const executeNetworkCall = async (
       fullArgs: FunctionArgs<Mutation>,
+      requestId: number,
     ): Promise<FunctionReturnType<Mutation>> => {
       try {
+        if (!isEnabled()) {
+          throw new Error("Solid Convex is disabled.");
+        }
+
         const result = (await getClient().mutation(
           mutation,
           fullArgs,
         )) as FunctionReturnType<Mutation>;
         appliedOptimisticEntries = [];
+        if (requestId === latestRequestId) {
+          setData(() => result);
+          setError(undefined);
+          setStatus("success");
+        }
         options?.onSuccess?.(result);
         return result;
       } catch (error) {
@@ -709,20 +857,30 @@ const createUseMutation = (
         const convexError: ConvexError = Object.assign(normalizedError, {
           userMessage: getUserErrorMessage(normalizedError),
         });
+        if (requestId === latestRequestId) {
+          setError(() => convexError);
+          setStatus("error");
+        }
         options?.onError?.(convexError);
         throw normalizedError;
       }
     };
 
-    return (...argsTuple) => {
+    const mutate: MutationFunction<Mutation> = (...argsTuple) => {
       const fullArgs = argsTuple[0] ?? emptyMutationArgs<Mutation>();
+      const requestId = latestRequestId + 1;
+      latestRequestId = requestId;
+
+      setVariables(() => fullArgs);
+      setError(undefined);
+      setStatus("pending");
 
       for (const optimisticEntry of optimisticEntries) {
         applyOptimisticUpdate(optimisticEntry, fullArgs);
       }
 
       if (debounceMs <= 0) {
-        return executeNetworkCall(fullArgs);
+        return executeNetworkCall(fullArgs, requestId);
       }
 
       if (debounceTimeout) {
@@ -735,7 +893,7 @@ const createUseMutation = (
 
         debounceTimeout = setTimeout(() => {
           debounceTimeout = undefined;
-          executeNetworkCall(fullArgs)
+          executeNetworkCall(fullArgs, requestId)
             .then((result) => {
               pendingResolve?.(result);
               pendingResolve = undefined;
@@ -749,9 +907,14 @@ const createUseMutation = (
         }, debounceMs);
       });
     };
+
+    return createMutationResult(mutate, state);
   };
 
-const createUseAction = (getClient: () => ConvexClient) =>
+const createUseAction = (
+  isEnabled: () => boolean,
+  getClient: () => ConvexClient,
+) =>
   function createActionForInstance<Action extends FunctionReference<"action">>(
     actionReference: Action,
     options?: {
@@ -765,6 +928,10 @@ const createUseAction = (getClient: () => ConvexClient) =>
       const fullArgs = argsTuple[0] ?? emptyActionArgs<Action>();
 
       try {
+        if (!isEnabled()) {
+          throw new Error("Solid Convex is disabled.");
+        }
+
         const result = (await getClient().action(
           actionReference,
           fullArgs,
@@ -788,6 +955,7 @@ export function createSolidConvex(options: CreateSolidConvexOptions) {
   const inflightRequests = new Map<string, Promise<unknown>>();
   let client: ConvexClient | undefined = options.client;
   let authConfigured = false;
+  const isEnabled = () => Boolean(client || options.url);
 
   hydrateCache(cache, options.initialCache);
 
@@ -841,11 +1009,12 @@ export function createSolidConvex(options: CreateSolidConvexOptions) {
     cache,
     inflightRequests,
     "csr-prefetch",
+    isEnabled,
     createBrowserQueryRunner(getClient),
   );
-  const useQueryForInstance = createUseQuery(cache, getClient);
-  const useMutationForInstance = createUseMutation(cache, getClient);
-  const useActionForInstance = createUseAction(getClient);
+  const useQueryForInstance = createUseQuery(cache, isEnabled, getClient);
+  const useMutationForInstance = createUseMutation(cache, isEnabled, getClient);
+  const useActionForInstance = createUseAction(isEnabled, getClient);
 
   return {
     cache,
@@ -874,13 +1043,18 @@ export function createSolidConvexServer(
 ) {
   const cache = createConvexCache();
   const inflightRequests = new Map<string, Promise<unknown>>();
-  const client =
-    options.client ??
-    new ConvexHttpClient(options.url ?? createMissingServerUrlError());
+  let client: ConvexHttpClient | undefined = options.client;
+  const isEnabled = () => Boolean(client || options.url);
 
   hydrateCache(cache, options.initialCache);
 
   const applyAuth = async () => {
+    if (!client) {
+      client = new ConvexHttpClient(
+        options.url ?? createMissingServerUrlError(),
+      );
+    }
+
     const token = options.authToken ?? (await options.getAuthToken?.()) ?? null;
     if (token) {
       client.setAuth(token);
@@ -893,30 +1067,41 @@ export function createSolidConvexServer(
     cache,
     inflightRequests,
     "ssr-prefetch",
+    isEnabled,
     createServerQueryRunner(applyAuth),
   );
 
   const mutation = async <Mutation extends FunctionReference<"mutation">>(
     mutationReference: Mutation,
     ...argsTuple: MutationArgsTuple<Mutation>
-  ): Promise<FunctionReturnType<Mutation>> =>
-    (await (
+  ): Promise<FunctionReturnType<Mutation>> => {
+    if (!isEnabled()) {
+      throw new Error("Solid Convex is disabled.");
+    }
+
+    return (await (
       await applyAuth()
     ).mutation(
       mutationReference,
       argsTuple[0] ?? emptyMutationArgs<Mutation>(),
     )) as FunctionReturnType<Mutation>;
+  };
 
   const action = async <Action extends FunctionReference<"action">>(
     actionReference: Action,
     ...argsTuple: ActionArgsTuple<Action>
-  ): Promise<FunctionReturnType<Action>> =>
-    (await (
+  ): Promise<FunctionReturnType<Action>> => {
+    if (!isEnabled()) {
+      throw new Error("Solid Convex is disabled.");
+    }
+
+    return (await (
       await applyAuth()
     ).action(
       actionReference,
       argsTuple[0] ?? emptyActionArgs<Action>(),
     )) as FunctionReturnType<Action>;
+  };
 
   return {
     action,
@@ -925,7 +1110,15 @@ export function createSolidConvexServer(
       cache.clear();
       inflightRequests.clear();
     },
-    client: () => client,
+    client: () => {
+      if (!client) {
+        client = new ConvexHttpClient(
+          options.url ?? createMissingServerUrlError(),
+        );
+      }
+
+      return client;
+    },
     dehydrate: (): ConvexCacheSnapshot => [...cache.entries()],
     hydrate: (snapshot?: ConvexCacheSnapshot) => hydrateCache(cache, snapshot),
     mutation,
@@ -952,8 +1145,16 @@ export function useSolidConvex() {
 
 export function useQuery<Query extends FunctionReference<"query">>(
   queryReference: Query,
+  ...optionsTuple: UseQueryOptionsWithInitialDataTuple<Query>
+): UseQueryResult<FunctionReturnType<Query>, true>;
+export function useQuery<Query extends FunctionReference<"query">>(
+  queryReference: Query,
   ...optionsTuple: UseQueryOptionsTuple<Query>
-): UseQueryResult<FunctionReturnType<Query>> {
+): UseQueryResult<FunctionReturnType<Query>>;
+export function useQuery<Query extends FunctionReference<"query">>(
+  queryReference: Query,
+  ...optionsTuple: UseQueryOptionsTuple<Query>
+): UseQueryResult<FunctionReturnType<Query>, boolean> {
   return useSolidConvex().useQuery(queryReference, ...optionsTuple);
 }
 
@@ -962,15 +1163,8 @@ export function useMutation<
   Query extends FunctionReference<"query"> = FunctionReference<"query">,
 >(
   mutationReference: Mutation,
-  options?: {
-    onSuccess?: (result: FunctionReturnType<Mutation>) => void;
-    onError?: (error: ConvexError) => void;
-    optimistic?:
-      | OptimisticUpdate<Mutation, Query>
-      | OptimisticUpdate<Mutation, Query>[];
-    debounce?: number;
-  },
-) {
+  options?: UseMutationOptions<Mutation, Query>,
+): UseMutationResult<Mutation> {
   return useSolidConvex().useMutation(mutationReference, options);
 }
 

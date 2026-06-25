@@ -266,6 +266,34 @@ describe("Solid Convex Public prefetch cache", () => {
     }
   });
 
+  test("initialData provides fallback data while the query is loading", async () => {
+    const browserClient = createBrowserClient([]);
+    const convex = createSolidConvex({ client: browserClient.client });
+    const root = createRoot((dispose) => {
+      const items = convex.useQuery(api.todos.list, {
+        initialData: [],
+      });
+
+      return { dispose, items };
+    });
+
+    try {
+      expect(root.items()).toEqual([]);
+      expect(root.items.state.data()).toEqual([]);
+      expect(root.items.state.status()).toBe("loading");
+      expect(root.items.state.isLoading()).toBe(true);
+
+      await flushEffects();
+      browserClient.subscriptions[0]?.success(prefetchedItems);
+
+      expect(root.items()).toEqual(prefetchedItems);
+      expect(root.items.state.status()).toBe("success");
+      expect(root.items.state.isSuccess()).toBe(true);
+    } finally {
+      root.dispose();
+    }
+  });
+
   test("disabled queries are idle and do not subscribe", async () => {
     const browserClient = createBrowserClient([]);
     const convex = createSolidConvex({ client: browserClient.client });
@@ -284,6 +312,38 @@ describe("Solid Convex Public prefetch cache", () => {
     } finally {
       root.dispose();
     }
+  });
+
+  test("disabled instances skip prefetches and subscriptions", async () => {
+    const browserClient = createBrowserClient(prefetchedItems);
+    const convex = createSolidConvex({});
+
+    await expect(convex.prefetch(api.todos.list)).resolves.toBeUndefined();
+    expect(browserClient.queryCalls).toHaveLength(0);
+
+    const root = createRoot((dispose) => {
+      const items = convex.useQuery(api.todos.list);
+
+      return { dispose, items };
+    });
+
+    try {
+      await flushEffects();
+      expect(root.items()).toBeUndefined();
+      expect(root.items.state.status()).toBe("idle");
+      expect(browserClient.subscriptions).toHaveLength(0);
+    } finally {
+      root.dispose();
+    }
+  });
+
+  test("disabled server instances skip prefetches", async () => {
+    const serverClient = createServerClient(prefetchedItems);
+    const server = createSolidConvexServer({});
+
+    await expect(server.prefetch(api.todos.list)).resolves.toBeUndefined();
+    expect(serverClient.queryCalls).toHaveLength(0);
+    expect(server.dehydrate()).toHaveLength(0);
   });
 
   test("hydrating an active query moves it from loading to success", () => {
@@ -375,21 +435,35 @@ describe("Solid Convex Public optimistic mutation cache", () => {
         query: api.todos.list,
       },
     });
+    const [toggleMutation, toggleState] = toggle;
 
     try {
-      const promise = toggle({
-        id: prefetchedItems[0]._id as Id<"todoItems">,
-      });
+      const args = { id: prefetchedItems[0]._id as Id<"todoItems"> };
+      const promise = toggleMutation(args);
 
+      expect(toggle.state).toBe(toggleState);
+      expect(toggleState.status()).toBe("pending");
+      expect(toggleState.isPending()).toBe(true);
+      expect(toggleState.isLoading()).toBe(true);
+      expect(toggleState.variables()).toEqual(args);
       expect(root.items()?.[0]?.done).toBe(true);
       expect(convex.dehydrate()[0]?.[1].source).toBe("csr-optimistic");
 
       deferred.resolve({ ok: true });
       await expect(promise).resolves.toEqual({ ok: true });
+      expect(toggleState.data()).toEqual({ ok: true });
+      expect(toggleState.status()).toBe("success");
+      expect(toggleState.isSuccess()).toBe(true);
+      expect(toggleState.error()).toBeUndefined();
       expect(browserClient.mutationCalls).toEqual([
         { id: prefetchedItems[0]._id },
       ]);
       expect(root.items()?.[0]?.done).toBe(true);
+
+      toggleState.reset();
+      expect(toggleState.status()).toBe("idle");
+      expect(toggleState.data()).toBeUndefined();
+      expect(toggleState.variables()).toBeUndefined();
     } finally {
       root.dispose();
     }
@@ -428,8 +502,14 @@ describe("Solid Convex Public optimistic mutation cache", () => {
         id: prefetchedItems[0]._id as Id<"todoItems">,
       });
 
+      expect(toggle.state.status()).toBe("pending");
       expect(root.items()?.[0]?.done).toBe(true);
       await expect(promise).rejects.toThrow("Todo not found.");
+      expect(toggle.state.status()).toBe("error");
+      expect(toggle.state.error()).toMatchObject({
+        message: "Todo not found.",
+        userMessage: "Todo not found.",
+      });
       expect(root.items()).toEqual(prefetchedItems);
       expect(errors[0]).toMatchObject({
         message: "Todo not found.",
@@ -438,5 +518,21 @@ describe("Solid Convex Public optimistic mutation cache", () => {
     } finally {
       root.dispose();
     }
+  });
+
+  test("disabled instances reject mutations without calling the client", async () => {
+    const browserClient = createBrowserClient([]);
+    const convex = createSolidConvex({});
+    const toggle = convex.useMutation(api.todos.toggle);
+
+    await expect(
+      toggle({ id: prefetchedItems[0]._id as Id<"todoItems"> }),
+    ).rejects.toThrow("Solid Convex is disabled.");
+    expect(toggle.state.status()).toBe("error");
+    expect(toggle.state.error()).toMatchObject({
+      message: "Solid Convex is disabled.",
+      userMessage: "Solid Convex is disabled.",
+    });
+    expect(browserClient.mutationCalls).toHaveLength(0);
   });
 });
