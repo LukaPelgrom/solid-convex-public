@@ -84,9 +84,10 @@ export const createSolidConvexAuth = () => {
       throw new Error(signUpResult.error.message ?? "Registration failed.");
     }
 
-    await syncSession();
-    await upsertDemoProfile({ role });
     await refreshAuthState();
+    void upsertDemoProfile({ role })
+      .then(() => refreshAuthState())
+      .catch(() => undefined);
   };
 
   const signOut = async () => {

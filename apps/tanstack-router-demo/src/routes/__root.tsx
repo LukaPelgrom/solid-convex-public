@@ -4,10 +4,11 @@ import {
   useLocation,
   useRouter,
 } from "@tanstack/solid-router";
-import { Show } from "solid-js";
+import { Show, createEffect } from "solid-js";
 import type { SolidConvex } from "@solid-configs-public/core";
 import { PermissionProvider } from "@solid-configs-public/permissions/solid";
 import type { SolidConvexAuth } from "../demo";
+import { normalizeAuthRedirect } from "../demo/auth-redirect";
 import { TanStackDemoShell } from "../demo-shell";
 
 export type RouterContext = {
@@ -24,9 +25,22 @@ function Root() {
   const location = useLocation();
   const auth = router.options.context.auth;
   const user = () => auth.user() ?? null;
-  const isAuthRoute = () => location().pathname === "/register";
+  const isAuthRoute = () =>
+    location().pathname === "/" || location().pathname === "/register";
   const shouldRenderShell = () =>
     !isAuthRoute() && (!auth.isReady() || Boolean(auth.user()));
+
+  createEffect(() => {
+    if (!auth.isReady() || isAuthRoute() || auth.user()) {
+      return;
+    }
+
+    void router.navigate({
+      to: "/",
+      search: { redirect: normalizeAuthRedirect(location().pathname) },
+      replace: true,
+    });
+  });
 
   return (
     <PermissionProvider subject={auth.subject}>
